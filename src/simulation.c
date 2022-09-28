@@ -1,24 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "../incl/constants.h"
 #include <omp.h>
 
-#define N 10
-#define C 1.0
-#define DT 0.1
-#define DD 2.0
 
-
-void print_matrix(float **matrix){
-    int i= 0;
-    int j = 0;
-    for(i = 0; i<N; i++){
-        for(j=0; j<N; j++){
-            printf(" %.3f ", (*matrix)[i*N + j]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");
-}
 
 void get_matrix_paralel(float **m){
     
@@ -98,29 +83,3 @@ void initialize_matrix(float **matrix){
     }
 }
 
-
-int main(){
-    int i = 0;
-    int j = 0;
-    float *matrix = (float *)malloc(N*N*sizeof(float));
-    
-    // PARALELO
-    initialize_matrix(&matrix);
-    int iter = 100;
-    #pragma omp paralel num_threads(N)
-    {
-        for(i = 0; i < iter; i++){
-            get_matrix_paralel(&matrix);
-        }
-    }
-    print_matrix(&matrix); //matriz creada de forma paralela
-
-
-    // SECUENCIAL
-    initialize_matrix(&matrix);
-    for(i = 0; i < iter; i++){
-        get_matrix_sequential(&matrix);
-    }
-    print_matrix(&matrix); //matriz creada de forma secuencial
-    
-}
