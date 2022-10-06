@@ -5,7 +5,7 @@
 
 
 
-void get_matrix_paralel(float **m){
+void get_matrix_paralel(float **m, int N){
     
     float *new = (float *)malloc(N*N*sizeof(float));
     int i,j = 0;
@@ -37,7 +37,7 @@ void get_matrix_paralel(float **m){
 }
 
 
-void get_matrix_sequential(float **m){
+void get_matrix_sequential(float **m, int N){
     
     float *new = (float *)malloc(N*N*sizeof(float));
     int i,j = 0;
@@ -68,7 +68,7 @@ void get_matrix_sequential(float **m){
     //return new;
 }
 
-void initialize_matrix(float **matrix){
+void initialize_matrix(float **matrix, int N){
     int i= 0;
     int j = 0;
     for(i = 0; i < N; i++){
