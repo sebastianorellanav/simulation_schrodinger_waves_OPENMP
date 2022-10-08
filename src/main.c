@@ -77,19 +77,17 @@ int main(int argc, char *argv[]){
 
 
         // PARALELO
-        time_spent = 0.0;
-        begin = clock();
+        double start;
+        double finish;
+        start = omp_get_wtime();
         initialize_matrix(&matrix_t0, N);
-        #pragma omp paralel num_threads(H)
-        {
-            matrix_t1 = get_first_matrix_paralell(&matrix_t0, N, H);
+        matrix_t1 = get_first_matrix_paralell(&matrix_t0, N, H);
             for(i = 0; i < T; i++){
                 get_matrix_paralell(&matrix_t1, &matrix_t0, N, H);
             }
-        }
-        end = clock();
-        time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-        printf("Tiempo paralelo: %f segundos\n\n", time_spent);
+        
+        finish = omp_get_wtime();
+        printf("Tiempo paralelo: %f sec.\n", finish-start);
         //print_matrix(&matrix, N); //matriz creada de forma paralela
         save_image(matrix_t1, N, file);
 
