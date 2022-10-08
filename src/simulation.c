@@ -5,45 +5,49 @@
 
 
 
-void get_matrix_paralel(float **m, int N){
+void get_matrix_paralell(float **m1, float **m2,  int N, int num_threads){
     
     float *new = (float *)malloc(N*N*sizeof(float));
     int i,j = 0;
     for (i = 0; i<N*N; i++){
         new[i] = 0.0;
     }
-    #pragma omp for schedule(static, 1)
+    int chunk = N/num_threads;
+    #pragma omp for schedule
     for(i=1; i<N-1; i++){
         for(j=1; j<N-1; j++){
             float a1 = 0.0;
             float a2 = 0.0;
             float a3 = 0.0;
             float a4 = 0.0;  
-            a1 = (*m)[(i-1)*N +j];
-            a2 = (*m)[(i+1)*N + j];
-            a3 = (*m)[i*N + (j-1)];
-            a4 = (*m)[i*N + (j+1)];
+            a1 = (*m1)[(i-1)*N +j];
+            a2 = (*m1)[(i+1)*N + j];
+            a3 = (*m1)[i*N + (j-1)];
+            a4 = (*m1)[i*N + (j+1)];
 
-
-            new[i*N + j] = (*m)[i*N + j] + (((C*C)/2.0) * ((DT/DD)*(DT/DD)) * (a2+a1+a4+a3 - 4.0*(*m)[i*N + j]));
+    
+            new[i*N + j] = 2*(*m1)[i*N + j] - (*m2)[i*N + j] + (((C*C)/2.0) * ((DT/DD)*(DT/DD)) * (a2+a1+a4+a3 - 4.0*(*m1)[i*N + j]));
         
         }
     }
     for (i=0; i<N*N; i++){
-        (*m)[i]= new[i];
+        (*m2)[i] = (*m1)[i];
+        (*m1)[i]= new[i];
+        
     }
     free(new);
     //return new;
 }
 
+float* get_first_matrix_paralell(float **m, int N, int num_threads){
 
-void get_matrix_sequential(float **m, int N){
-    
     float *new = (float *)malloc(N*N*sizeof(float));
     int i,j = 0;
     for (i = 0; i<N*N; i++){
         new[i] = 0.0;
     }
+    int chunk = N/num_threads;
+    #pragma omp for schedule
     for(i=1; i<N-1; i++){
         for(j=1; j<N-1; j++){
             float a1 = 0.0;
@@ -56,13 +60,77 @@ void get_matrix_sequential(float **m, int N){
             a4 = (*m)[i*N + (j+1)];
 
 
-            new[i*N + j] = (*m)[i*N + j] + (((C*C)/2.0) * ((DT/DD)*(DT/DD)) * (a2+a1+a4+a3 - 4.0*(*m)[i*N + j]));
+            new[i*N + j] = (*m)[i*N + j] + ((C*C) * ((DT*DT)/(DD*DD)) * (a2+a1+a4+a3 - 4.0*(*m)[i*N + j]));
+        
+        }
+    }
+    //for (i=0; i<N*N; i++){
+    //    (*m)[i]= new[i];
+    //}
+    return new;
+    //return new;
+}
+
+float* get_first_matrix(float **m, int N){
+
+    float *new = (float *)malloc(N*N*sizeof(float));
+    int i,j = 0;
+    for (i = 0; i<N*N; i++){
+        new[i] = 0.0;
+    }
+
+    for(i=1; i<N-1; i++){
+        for(j=1; j<N-1; j++){
+            float a1 = 0.0;
+            float a2 = 0.0;
+            float a3 = 0.0;
+            float a4 = 0.0;  
+            a1 = (*m)[(i-1)*N +j];
+            a2 = (*m)[(i+1)*N + j];
+            a3 = (*m)[i*N + (j-1)];
+            a4 = (*m)[i*N + (j+1)];
+
+
+            new[i*N + j] = (*m)[i*N + j] + ((0.5*C*C) * ((DT*DT)/(DD*DD)) * (a2+a1+a4+a3 - 4.0*(*m)[i*N + j]));
+        
+        }
+    }
+    //for (i=0; i<N*N; i++){
+    //    (*m)[i]= new[i];
+    //}
+    return new;
+    //return new;
+}
+
+
+void get_matrix_sequential(float **m1, float **m2,  int N){
+    
+    float *new = (float *)malloc(N*N*sizeof(float));
+    int i,j = 0;
+    for (i = 0; i<N*N; i++){
+        new[i] = 0.0;
+    }
+    for(i=1; i<N-1; i++){
+        for(j=1; j<N-1; j++){
+            float a1 = 0.0;
+            float a2 = 0.0;
+            float a3 = 0.0;
+            float a4 = 0.0;  
+            a1 = (*m1)[(i-1)*N +j];
+            a2 = (*m1)[(i+1)*N + j];
+            a3 = (*m1)[i*N + (j-1)];
+            a4 = (*m1)[i*N + (j+1)];
+
+    
+            new[i*N + j] = 2*(*m1)[i*N + j] - (*m2)[i*N + j] + ((C*C) * ((DT/DD)*(DT/DD)) * (a2+a1+a4+a3 - 4.0*(*m1)[i*N + j]));
         
         }
     }
     //print_matrix(new);
     for (i=0; i<N*N; i++){
-        (*m)[i]= new[i];
+        (*m2)[i] = (*m1)[i];
+        (*m1)[i]= new[i];
+        
     }
     free(new);
     //return new;

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>       // for time()
 #include <omp.h>
 #include "../incl/simulation.h"
 #include "../incl/utils.h"
@@ -52,19 +53,45 @@ int main(int argc, char *argv[]){
     if(passcount == 5){    
         int i = 0;
         int j = 0;
-        float *matrix = (float *)malloc(N*N*sizeof(float));
+        float *matrix_t0 = (float *)malloc(N*N*sizeof(float));
+        float *matrix_t1 = (float *)malloc(N*N*sizeof(float));
+        double time_spent = 0.0;
+
+
+        //Secuencial
+        clock_t begin = clock();
+        initialize_matrix(&matrix_t0, N);
+        matrix_t1 = get_first_matrix(&matrix_t0, N);
+        for(i = 0; i < T; i++){
+            get_matrix_sequential(&matrix_t1, &matrix_t0, N);
+        }
+        clock_t end = clock();
+        time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+        printf("Tiempo secuencial: %f segundos\n\n", time_spent);
+        save_image(matrix_t1, N, "secuencial.raw");
         
+        free(matrix_t0);
+        free(matrix_t1);
+        matrix_t0 = (float *)malloc(N*N*sizeof(float));
+        matrix_t1 = (float *)malloc(N*N*sizeof(float));
+
+
         // PARALELO
-        initialize_matrix(&matrix, N);
+        time_spent = 0.0;
+        begin = clock();
+        initialize_matrix(&matrix_t0, N);
         #pragma omp paralel num_threads(H)
         {
+            matrix_t1 = get_first_matrix_paralell(&matrix_t0, N, H);
             for(i = 0; i < T; i++){
-                get_matrix_paralel(&matrix, N);
+                get_matrix_paralell(&matrix_t1, &matrix_t0, N, H);
             }
         }
-        print_matrix(&matrix, N); //matriz creada de forma paralela
-
-        save_image(matrix, N, file);
+        end = clock();
+        time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+        printf("Tiempo paralelo: %f segundos\n\n", time_spent);
+        //print_matrix(&matrix, N); //matriz creada de forma paralela
+        save_image(matrix_t1, N, file);
 
         return 1;
     }
