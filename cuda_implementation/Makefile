@@ -21,7 +21,7 @@
 #                                                                                                   #
 #####################################################################################################
 
-CC = gcc
+CC = nvcc
 SRC= src
 OBJ = obj
 INCL= incl
@@ -41,8 +41,8 @@ OPTION_COMPILE = -DDEBUG -Wall
 #                                                                                                               #	
 #################################################################################################################
 
-SOURCES := $(wildcard $(SRC)/*.c)
-OBJECTS := $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SOURCES))
+SOURCES := $(wildcard $(SRC)/*.cu)
+OBJECTS := $(patsubst $(SRC)/%.cu, $(OBJ)/%.o, $(SOURCES))
 
 all: clean main
 	$(eval LOCAL=true)
@@ -53,10 +53,10 @@ all: clean main
 main: $(OBJECTS)
 	$(eval LOCAL=true)
 	@echo "Generando ejecutable ..."
-	($(CC) $^ -lm $(DEBUG_MODE) $(SISTEMA)  -o $(EXECUTABLE_NAME) -fopenmp  && echo "[OK]") \
+	($(CC) $^ -lm $(DEBUG_MODE) $(SISTEMA)  -o $(EXECUTABLE_NAME)  && echo "[OK]") \
 		||  (echo "[ERROR]" && exit 1; )
 
-$(OBJ)/%.o: $(SRC)/%.c
+$(OBJ)/%.o: $(SRC)/%.cu
 	@echo "Generando archivos object de $@ ...."
 	($(CC) $(DEBUG_MODE) $(SISTEMA)  -lm -I$(SRC) -c $< -o $@ && echo "[OK]") \
 		||  (echo "[ERROR]" && exit 1; )
@@ -83,4 +83,4 @@ clean:
 	@echo "Limpieza de archivos antiguos completa!!"
 	@echo "-------------------------------------------------------"
 
-.SILENT: clean all make main $(OBJ)/%.o $(SOURCES) $(OBJECTS) install $(SRC)/%.c main-debug rm
+.SILENT: clean all make main $(OBJ)/%.o $(SOURCES) $(OBJECTS) install $(SRC)/%.cu main-debug rm
